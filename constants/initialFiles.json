@@ -11,10 +11,6 @@
   ],
   "sql": [
     {
-      "name": "installSpatial.sql",
-      "content": "-- Install and load the DuckDB-Wasm spatial extension.\nINSTALL spatial;\nLOAD spatial;\n"
-    },
-    {
       "name": "createProjectsSequence.sql",
       "content": "-- Create a sequence for the projects table primary key.\nCREATE SEQUENCE IF NOT EXISTS projects_id_seq;\n"
     },
