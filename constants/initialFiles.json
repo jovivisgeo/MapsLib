@@ -1,0 +1,50 @@
+{
+  "tutorial": [
+    {
+      "name": "hello.py",
+      "content": "print('Hello from Python!')"
+    },
+    {
+      "name": "sum.py",
+      "content": "print(sum([1, 2, 3, 4, 5]))"
+    }
+  ],
+  "sql": [
+    {
+      "name": "installSpatial.sql",
+      "content": "-- Install and load the DuckDB-Wasm spatial extension.\nINSTALL spatial;\nLOAD spatial;\n"
+    },
+    {
+      "name": "createProjectsSequence.sql",
+      "content": "-- Create a sequence for the projects table primary key.\nCREATE SEQUENCE IF NOT EXISTS projects_id_seq;\n"
+    },
+    {
+      "name": "createProjectsTable.sql",
+      "content": "-- Create the projects table if it doesn't exist, including a spatial column.\nCREATE TABLE IF NOT EXISTS projects (\n  id INTEGER PRIMARY KEY DEFAULT nextval('projects_id_seq'),\n  name VARCHAR(255) NOT NULL,\n  description TEXT,\n  metadata JSON,\n  location GEOMETRY  -- This column stores geospatial data (e.g., POINT or MULTIPOINT)\n);\n"
+    },
+    {
+      "name": "insertProject.sql",
+      "content": "-- Insert a new project with static name, description, and metadata,\n-- while dynamically providing spatial coordinates using placeholders from the drawingPointsAtom.\nINSERT INTO projects (name, description, metadata, location)\nVALUES (\n  'My Static Project',\n  'This is a static project description.',\n  '{\"owner\": \"Alice\", \"createdDate\": \"2023-10-25\"}',\n  ST_GeomFromText('POINT({{longitude}} {{latitude}})')\n);\n"
+    },
+    {
+      "name": "listTables.sql",
+      "content": "-- List all tables in the current database.\nSHOW TABLES;\n"
+    },
+    {
+      "name": "nycQuery.sql",
+      "content": "-- Example query using the spatial extension with the NYC taxi dataset:\nCREATE TABLE nyc AS\nSELECT\n  borough,\n  st_union_agg(geom) AS full_geom,\n  st_area(full_geom) AS area,\n  st_centroid(full_geom) AS centroid,\n  count(*) AS count\nFROM\n  st_read('https://raw.githubusercontent.com/duckdb/duckdb-spatial/main/test/data/nyc_taxi/taxi_zones/taxi_zones.shp')\nGROUP BY borough;\n\nSELECT borough, area, centroid::VARCHAR, count FROM nyc;\n"
+    },
+    {
+      "name": "complaintsByYear.sql",
+      "content": "select year(created_date)::int as label, count(*)::int as value\nfrom sample_data.nyc.service_requests\nwhere label < 2023\nand agency_name = 'New York City Police Department'\ngroup by 1\norder by 1;\n"
+    },
+    {
+      "name": "nycSpatial.sql",
+      "content": "-- Spatial Query Example using the Spatial Extension\nWITH nyc AS (\n  SELECT\n    borough,\n    st_area(st_union_agg(geom)) AS area,\n    st_centroid(st_union_agg(geom)) AS centroid,\n    count(*)::VARCHAR AS count\n  FROM st_read('https://raw.githubusercontent.com/duckdb/duckdb-spatial/main/test/data/nyc_taxi/taxi_zones/taxi_zones.shp')\n  GROUP BY borough\n)\nSELECT borough, area, centroid::VARCHAR, count FROM nyc;\n"
+    },
+    {
+      "name": "fetchProjects.sql",
+      "content": "-- Fetch all projects with human-readable geometry conversion.\nSELECT \n  id,\n  name,\n  description,\n  metadata,\n  ST_AsText(location) AS location\nFROM projects;\n"
+    }
+  ]
+} 
